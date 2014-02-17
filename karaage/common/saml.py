@@ -80,10 +80,16 @@ def add_saml_data(person, request):
     person.email = attrs['email']
     person.saml_id = attrs['persistent_id']
     person.telephone = attrs.get('telephone', None)
+    idp = attrs['idp']
     try:
-        person.institute = Institute.objects.get(saml_entityid=attrs['idp'])
+        institute = Institute.objects.get(saml_entityid=idp)
     except Institute.DoesNotExist:
-        raise UnknownInstitute()
+        if getattr(settings, 'SAML_INSTITUTE_AUTOCREATE', False):
+            institute = Institute(saml_entityid=idp, name=idp)
+            institute.save()
+        else:
+            raise UnknownInstitute()
+    person.institute = institute
     person.email_verified = True
     return person
 
