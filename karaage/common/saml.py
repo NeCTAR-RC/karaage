@@ -69,6 +69,10 @@ def logout_url(request):
     return url
 
 
+class UnknownInstitute(Exception):
+    pass
+
+
 def add_saml_data(person, request):
     attrs, error = parse_attributes(request)
     person.short_name = attrs['first_name']
@@ -76,7 +80,10 @@ def add_saml_data(person, request):
     person.email = attrs['email']
     person.saml_id = attrs['persistent_id']
     person.telephone = attrs.get('telephone', None)
-    person.institute = Institute.objects.get(saml_entityid=attrs['idp'])
+    try:
+        person.institute = Institute.objects.get(saml_entityid=attrs['idp'])
+    except Institute.DoesNotExist:
+        raise UnknownInstitute()
     person.email_verified = True
     return person
 

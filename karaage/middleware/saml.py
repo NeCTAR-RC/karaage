@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Karaage  If not, see <http://www.gnu.org/licenses/>.
 
+from django.conf import settings
 from django.contrib import auth
 from django.core.exceptions import ImproperlyConfigured
 from karaage.people.models import Person
@@ -74,7 +75,17 @@ class SamlUserMiddleware(object):
         try:
             person = Person.objects.get(saml_id=saml_id)
         except Person.DoesNotExist:
-            return
+            if not getattr(settings, 'SAML_PERSON_AUTOCREATE', False):
+                return
+
+            person = Person(saml_id=saml_id)
+            person.is_active = False
+            try:
+                saml.add_saml_data(person, request)
+            except saml.UnknownInstitute:
+                return
+            person.username = person.email
+            person.save()
 
         # User is valid.  Set request.user and persist user in the session
         # by logging the user in.
