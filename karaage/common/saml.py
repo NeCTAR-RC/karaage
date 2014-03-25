@@ -78,7 +78,6 @@ def add_saml_data(person, request):
     person.telephone = attrs.get('telephone', None)
     person.institute = Institute.objects.get(saml_entityid=attrs['idp'])
     person.email_verified = True
-    person.save()
     return person
 
 
