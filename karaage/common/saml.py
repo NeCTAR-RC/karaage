@@ -18,6 +18,7 @@
 from django.conf import settings
 from django import forms
 from karaage.institutes.models import Institute
+from karaage.people.models import Group
 
 
 def is_saml_session(request):
@@ -69,6 +70,10 @@ def logout_url(request):
     return url
 
 
+class UnknownInstitute(Exception):
+    pass
+
+
 def add_saml_data(person, request):
     attrs, error = parse_attributes(request)
     person.short_name = attrs['first_name']
@@ -76,9 +81,20 @@ def add_saml_data(person, request):
     person.email = attrs['email']
     person.saml_id = attrs['persistent_id']
     person.telephone = attrs.get('telephone', None)
-    person.institute = Institute.objects.get(saml_entityid=attrs['idp'])
+    idp = attrs['idp']
+    try:
+        institute = Institute.objects.get(saml_entityid=idp)
+    except Institute.DoesNotExist:
+        if not getattr(settings, 'SAML_INSTITUTE_AUTOCREATE', False):
+            raise UnknownInstitute()
+        institute = Institute(saml_entityid=idp, name=idp)
+        # set group if not already set
+        name = str(institute.name.lower().replace(' ', ''))
+        group, _ = Group.objects.get_or_create(name=name)
+        institute.group = group
+        institute.save()
+    person.institute = institute
     person.email_verified = True
-    person.save()
     return person
 
 
