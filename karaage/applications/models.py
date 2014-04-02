@@ -140,7 +140,14 @@ class Application(models.Model):
                     != self._meta:
                 return getattr(self, self._class)
         except FieldDoesNotExist:
-            pass
+            obj = getattr(self, self._class, None)
+            if obj:
+                return obj
+            for related in self._meta.get_all_related_objects():
+                child = getattr(self, related.get_accessor_name())
+                obj = getattr(child, self._class, None)
+                if obj:
+                    return obj
         return self
 
     def reopen(self):
