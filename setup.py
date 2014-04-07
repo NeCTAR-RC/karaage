@@ -47,10 +47,10 @@ for dirpath, dirnames, filenames in os.walk("karaage"):
     if filenames:
         packages.append('.'.join(fullsplit(dirpath)))
 
-tests_require = [
-    "factory_boy",
-    "mock",
-]
+
+tests_require = open('test-requirements.txt').readlines()
+install_requires = open('requirements.txt').readlines()
+
 
 setup(
     name="karaage",
@@ -85,23 +85,7 @@ setup(
     data_files=[
         ('/etc/karaage', ['conf/global_settings.py', ]),
     ],
-    install_requires=[
-        "python > 2.4",
-        "Django >= 1.6",
-        "South >= 0.7",
-        "python-alogger >= 2.0",
-        "django-xmlrpc >= 0.1",
-        "django-simple-captcha",
-        "django-ajax-selects >= 1.1.3",
-        "django_jsonfield >= 0.9.12",
-        "django-model-utils >= 2.0.0",
-        "django-tldap >= 0.2.9",
-        "django-xmlrpc >= 0.1",
-        "django_celery",
-        "django_model_utils >= 2.0.0",
-        "matplotlib",
-    ],
+    install_requires=install_requires,
     tests_require=tests_require,
-    extras_require={
-        'tests': tests_require},
+    extras_require={'tests': tests_require},
 )
