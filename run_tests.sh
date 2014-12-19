@@ -12,12 +12,15 @@ fi
 
 echo "FLAKE8"
 echo "############################"
-./flake8-diff.py --changed --verbose
-if [ ! $? -eq 0 ]
+if [ hash git 2>/dev/null ]
 then
-    RETURN=1
+    ./flake8-diff.py --changed --verbose
+    if [ ! $? -eq 0 ]
+    then
+        RETURN=1
+    fi
+    echo -e "\n\n"
 fi
-echo -e "\n\n"
 
 echo "TESTS"
 echo "############################"
