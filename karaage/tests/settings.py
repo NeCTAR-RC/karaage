@@ -1,4 +1,6 @@
 # Django settings for grunt project.
+import celery.app
+celery.app.app_or_default()
 from karaage.conf.defaults import *
 from os import uname
 
